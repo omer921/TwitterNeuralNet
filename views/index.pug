@@ -3,6 +3,8 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  p Enter the Twitter Handle:
-    input#handle
-  button Submit
+  form(action="/check", method="post")
+    p Enter the Twitter Handle:
+      input(id='handle',type='text',value='',placeholder='@',name='handle')
+    div.actions
+      input(type="submit", value="Submit")

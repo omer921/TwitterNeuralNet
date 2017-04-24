@@ -8,3 +8,20 @@ block content
       input(id='handle',type='text',value='',placeholder='@',name='handle')
     div.actions
       input(type="submit", value="Submit")
+
+    if data
+      p Results:
+        for d in data
+          p= d.screen
+            table
+              thead
+                tr
+                  th Title
+                  th Accuracy
+                  th Prediction
+              tbody
+                for k, i in d.data
+                  tr
+                    td= i
+                    td= k.accuracy
+                    td= k.prediction

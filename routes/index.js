@@ -15,6 +15,9 @@ router.get('/', function(req, res, next) {
 router.post('/check', function(req, res, next) {
   var userName = req.body.handle;
 
+  var data = {};
+  var result = [];
+
   var options = {
     args: [userName]
   };
@@ -24,24 +27,41 @@ router.post('/check', function(req, res, next) {
 
   pyshell.on('message', function (message) {
   // received a message sent from the Python script (a simple "print" statement)
-    var data = JSON.parse(message);
-    var result = [];
-    for(key in data) {
-      var screen = key;
-      var obj = {
-        'screen': screen
-      }
-      obj['data'] = {};
-      for(k in data[key]) {
+    try {
+      var data = JSON.parse(message);
+      //var result = [];
+      for(key in data) {
+        var screen = key;
+        var obj = {
+          'screen': screen
+        }
+        obj['data'] = {};
+        for(k in data[key]) {
 
-        obj['data'][k] = data[key][k];
-        obj['data'][k]['title'] = k
+          obj['data'][k] = data[key][k];
+          obj['data'][k]['title'] = k
+        }
+        result.push(obj)
       }
-      result.push(obj)
-
+      console.log(result.length + " is current length")
+      //console.log(JSON.stringify(result));
+      //res.render('index', { title: 'Twitter Bot Detector', data: result});
+    } catch (e) {
+      console.log(message);
+      console.log(e);
+      //res.render('index', { title: 'An error was caught and logged'})
     }
-    console.log(JSON.stringify(result));
+
+  });
+
+  pyshell.end(function (err) {
+    if (err){
+      console.log(err);
+      return res.render('index', { title: 'An error was caught and logged'})
+    }
+    console.log('finished');
     res.render('index', { title: 'Twitter Bot Detector', data: result});
+
   });
 });
 

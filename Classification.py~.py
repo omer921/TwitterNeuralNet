@@ -1,5 +1,5 @@
 import numpy as np
-import json, random, twitter, datetime, re, sys, string, pickle, os.path, time
+import json, random, twitter, datetime, re, sys, string
 from sys import maxint
 from dateutil import parser
 from bs4 import BeautifulSoup as BSHTML
@@ -414,13 +414,6 @@ def trainClassifiers():
 
 	#iterate over each fold
     f = 1
-    bestann = [None, -maxint]
-    bestrf = [None, -maxint]
-    bestdt = [None, -maxint]
-    bestlr = [None, -maxint]
-    bestnb = [None, -maxint]
-    bestknn = [None, -maxint]
-
     for train_index, test_index in folds.split(bots):
         #print('fold {0}'.format(f))
         f = f + 1
@@ -492,41 +485,15 @@ def trainClassifiers():
 		#conver the testLabels to a numpy array and compute the accuracy for this
 		#iteration. Then add the accuracy to the list of accuracies for each classifier
         testLabels = np.array(testLabels)
-        annAcc = accuracy(annOut, testLabels)
-        lrAcc = accuracy(lrOut, testLabels)
-        knnAcc = accuracy(knnOut, testLabels)
-        rfAcc = accuracy(rfOut, testLabels)
-        dtAcc = accuracy(dtOut, testLabels)
-        nbAcc = accuracy(nbOut, testLabels)
-
-        if annAcc > bestann[1]:
-            bestann[0] = ann
-            bestann[1] = annAcc
-        if rfAcc > bestrf[1]:
-            bestrf[0] = rf
-            bestrf[1] = rfAcc
-        if dtAcc > bestdt[1]:
-            bestdt[0] = dt
-            bestdt[1] = dtAcc
-        if lrAcc > bestlr[1]:
-            bestlr[0] = lr
-            bestlr[1] = lrAcc
-        if knnAcc > bestknn[1]:
-            bestknn[0] = knn
-            bestknn[1] = knnAcc
-        if nbAcc > bestnb[1]:
-            bestnb[0] = nb
-            bestnb[1] = nbAcc
-
-        accuracies['NeuralNetwork'].append(annAcc)
-        accuracies['LogisticRegression'].append(lrAcc)
-        accuracies['KNearestNeighbors'].append(knnAcc)
+        accuracies['NeuralNetwork'].append(accuracy(annOut, testLabels))
+        accuracies['LogisticRegression'].append(accuracy(lrOut, testLabels))
+        accuracies['KNearestNeighbors'].append(accuracy(knnOut, testLabels))
         #accuracies['SupportVectorMachine'].append(accuracy(svmOut, testLabels))
-        accuracies['RandomForest'].append(rfAcc)
-        accuracies['DecisionTree'].append(dtAcc)
-        accuracies['NaiveBayes'].append(nbAcc)
+        accuracies['RandomForest'].append(accuracy(rfOut, testLabels))
+        accuracies['DecisionTree'].append(accuracy(dtOut, testLabels))
+        accuracies['NaiveBayes'].append(accuracy(nbOut, testLabels))
 
-    return (bestann[0], bestrf[0], bestdt[0], bestnb[0], bestknn[0], bestlr[0], accuracies)
+    return (ann, rf, dt, nb, knn, lr, accuracies)
 
 #compute the accuracy of the output from the classifiers
 def accuracy(output, testLabels):
@@ -570,39 +537,7 @@ if __name__ == "__main__":
 	#get authenticated to make twitter calls
 	twitter_api = login()
 	#train and get classifiers
-	#if one is stored then all of the are stoed
-	if os.path.isfile('rf.model'):
-		#print('reading')
-		with open('ann.model', 'rb') as handle:
-			ann = pickle.load(handle)
-		with open('dt.model', 'rb') as handle:
-			dt = pickle.load(handle)
-		with open('rf.model', 'rb') as handle:
-			rf = pickle.load(handle)
-		with open('nb.model', 'rb') as handle:
-			nb = pickle.load(handle)
-		with open('knn.model', 'rb') as handle:
-			knn = pickle.load(handle)
-		with open('lr.model', 'rb') as handle:
-			lr = pickle.load(handle)
-		with open('rates.txt', 'rb') as handle:
-			rates = pickle.load(handle)
-	else:
-		(ann, rf, dt, nb, knn, lr, rates) = trainClassifiers()
-		with open('ann.model', 'wb') as handle:
-			pickle.dump(ann, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('dt.model', 'wb') as handle:
-			pickle.dump(dt, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('rf.model', 'wb') as handle:
-			pickle.dump(rf, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('nb.model', 'wb') as handle:
-			pickle.dump(nb, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('knn.model', 'wb') as handle:
-			pickle.dump(knn, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('lr.model', 'wb') as handle:
-			pickle.dump(lr, handle, protocol=pickle.HIGHEST_PROTOCOL)
-		with open('rates.txt', 'wb') as handle:
-			pickle.dump(rates, handle, protocol=pickle.HIGHEST_PROTOCOL)
+	(ann, rf, dt, nb, knn, lr, rates) = trainClassifiers()
 
 	#average the accuracy rates (for each classifier) and convert the accuracy rates to percent
 	for i in rates.keys():

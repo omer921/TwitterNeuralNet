@@ -278,7 +278,10 @@ def extractProfile(profile):
             temp[k] = profile[usr][k]
 
 		#derive friend-follower ration
-        temp['follower_ratio'] = profile[usr]['friends_count']/float(profile[usr]['followers_count'])
+        if profile[usr]['followers_count'] == 0:
+            temp['follower_ratio'] = 0
+        else:
+        	temp['follower_ratio'] = profile[usr]['friends_count']/float(profile[usr]['followers_count'])
 
 		#add the temporary dictionary with the extracted features to the 'cleaned' dictionary
         cleaned[usr] = temp

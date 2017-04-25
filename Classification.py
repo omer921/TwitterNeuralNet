@@ -460,9 +460,9 @@ def trainClassifiers():
 
 		#train and classify with a support vector machine with a linear kernel using bagging
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-        svm = BaggingClassifier(LinearSVC(), max_samples=0.5, max_features=0.5)
-        svm.fit(trainData, trainLabels)
-        svmOut = svm.predict(testData)
+        # svm = BaggingClassifier(LinearSVC(), max_samples=0.5, max_features=0.5)
+        # svm.fit(trainData, trainLabels)
+        svmOut = 1
 
 		#train and classify with a Naive Bayes for multivariate Bernoulli models using bagging
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html

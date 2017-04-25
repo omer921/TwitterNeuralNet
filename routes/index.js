@@ -13,7 +13,7 @@ router.get('/', function(req, res, next) {
 
 
 router.post('/check', function(req, res, next) {
-  var userName = req.body.handle;
+  var userName = req.body.handle.replace(/^@/, '');;
 
   var data = {};
   var result = [];

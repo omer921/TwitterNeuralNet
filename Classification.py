@@ -410,7 +410,7 @@ def trainClassifiers():
 
 	#place holders for accuracy values for each of the classifiers we use
 	#(to be averaged after iterating over each of the 10 folds)
-    accuracies = {'NeuralNetwork': [], 'LogisticRegression': [], 'KNearestNeighbors': [], 'RandomForest': [], 'DecisionTree': [], 'NaiveBayes': []}
+    accuracies = {'NeuralNetwork': [], 'SupportVectorMachine': [], 'LogisticRegression': [], 'KNearestNeighbors': [], 'RandomForest': [], 'DecisionTree': [], 'NaiveBayes': []}
 
 	#iterate over each fold
     f = 1
@@ -420,6 +420,7 @@ def trainClassifiers():
     bestlr = [None, -maxint]
     bestnb = [None, -maxint]
     bestknn = [None, -maxint]
+    bestsvm = [None, -maxint]
 
     for train_index, test_index in folds.split(bots):
         #print('fold {0}'.format(f))
@@ -467,9 +468,9 @@ def trainClassifiers():
 
 		#train and classify with a support vector machine with a linear kernel using bagging
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-        # svm = BaggingClassifier(LinearSVC(), max_samples=0.5, max_features=0.5)
-        # svm.fit(trainData, trainLabels)
-        #svmOut = 1
+        svm = BaggingClassifier(LinearSVC(), max_samples=0.5, max_features=0.5)
+        svm.fit(trainData, trainLabels)
+        svmOut = svm.predict(testData)
 
 		#train and classify with a Naive Bayes for multivariate Bernoulli models using bagging
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
@@ -498,7 +499,11 @@ def trainClassifiers():
         rfAcc = accuracy(rfOut, testLabels)
         dtAcc = accuracy(dtOut, testLabels)
         nbAcc = accuracy(nbOut, testLabels)
+        svmAcc = accuracy(svmOut, testLabels)
 
+        if svmAcc > bestsvm[1]:
+            bestsvm[0] = svm
+            bestsvm[1] = svmAcc
         if annAcc > bestann[1]:
             bestann[0] = ann
             bestann[1] = annAcc
@@ -521,12 +526,12 @@ def trainClassifiers():
         accuracies['NeuralNetwork'].append(annAcc)
         accuracies['LogisticRegression'].append(lrAcc)
         accuracies['KNearestNeighbors'].append(knnAcc)
-        #accuracies['SupportVectorMachine'].append(accuracy(svmOut, testLabels))
+        accuracies['SupportVectorMachine'].append(svmAcc)
         accuracies['RandomForest'].append(rfAcc)
         accuracies['DecisionTree'].append(dtAcc)
         accuracies['NaiveBayes'].append(nbAcc)
 
-    return (bestann[0], bestrf[0], bestdt[0], bestnb[0], bestknn[0], bestlr[0], accuracies)
+    return (bestann[0], bestsvm[0], bestrf[0], bestdt[0], bestnb[0], bestknn[0], bestlr[0], accuracies)
 
 #compute the accuracy of the output from the classifiers
 def accuracy(output, testLabels):
@@ -535,14 +540,14 @@ def accuracy(output, testLabels):
 	return (100*np.count_nonzero(np.array(output) == testLabels)/float(len(testLabels)))
 
 #classify a new instance
-def classify(name, twitter_api, ann, rf, dt, nb, knn, lr):
+def classify(name, twitter_api, ann, rf, dt, nb, knn, lr, svm):
 	#get the user's profile from Twitter
     profile = get_user_profile(twitter_api, screen_names=[name])
 
 	#only classify if the user not a verified user
     if profile[name]['verified']:
         #print('verified user')
-        return({'ann': [1], 'rf': [1], 'dt': [1], 'lr': [1], 'nb':[1], 'knn': [1]})
+        return({'ann': [1], 'svm': [1], 'rf': [1], 'dt': [1], 'lr': [1], 'nb':[1], 'knn': [1]})
     else:
 		#get Tweets for this user (i.e. get user timeline)
 	    tweets = dict()
@@ -562,7 +567,7 @@ def classify(name, twitter_api, ann, rf, dt, nb, knn, lr):
 	    user = [OrderedDict(sorted(profile[name].items())).values()]
 
 		#return rsults of classification
-	    return({'ann': ann.predict(user).tolist(), 'rf': rf.predict(user).tolist(), 'dt': dt.predict(user).tolist(), 'lr': lr.predict(user).tolist(), 'nb': nb.predict(user).tolist(), 'knn': knn.predict(user).tolist()})
+	    return({'ann': ann.predict(user).tolist(), 'svm': svm.predict(user).tolist(), 'rf': rf.predict(user).tolist(), 'dt': dt.predict(user).tolist(), 'lr': lr.predict(user).tolist(), 'nb': nb.predict(user).tolist(), 'knn': knn.predict(user).tolist()})
 
 
 #takes in usernames for classification via command line arguments
@@ -583,14 +588,18 @@ if __name__ == "__main__":
 			nb = pickle.load(handle)
 		with open('knn.model', 'rb') as handle:
 			knn = pickle.load(handle)
+		with open('svm.model', 'rb') as handle:
+			svm = pickle.load(handle)
 		with open('lr.model', 'rb') as handle:
 			lr = pickle.load(handle)
 		with open('rates.txt', 'rb') as handle:
 			rates = pickle.load(handle)
 	else:
-		(ann, rf, dt, nb, knn, lr, rates) = trainClassifiers()
+		(ann, svm, rf, dt, nb, knn, lr, rates) = trainClassifiers()
 		with open('ann.model', 'wb') as handle:
 			pickle.dump(ann, handle, protocol=pickle.HIGHEST_PROTOCOL)
+		with open('svm.model', 'wb') as handle:
+			pickle.dump(svm, handle, protocol=pickle.HIGHEST_PROTOCOL)
 		with open('dt.model', 'wb') as handle:
 			pickle.dump(dt, handle, protocol=pickle.HIGHEST_PROTOCOL)
 		with open('rf.model', 'wb') as handle:
@@ -611,10 +620,10 @@ if __name__ == "__main__":
 	#for each screen_name passed in via command line argument, classify as either
 	#bot (i.e. 0) or user (i.e. 1)
 	for name in sys.argv[1:]:
-		result = classify(name, twitter_api, ann, rf, dt, nb, knn, lr)
+		result = classify(name, twitter_api, ann, rf, dt, nb, knn, lr, svm)
 		r = {}
 
-		keys = [('KNearestNeighbors', 'knn'), ('LogisticRegression', 'lr'), ('NeuralNetwork', 'ann'), ('RandomForest', 'rf'), ('NaiveBayes', 'nb'), ('DecisionTree', 'dt')]
+		keys = [('KNearestNeighbors', 'knn'), ('SupportVectorMachine', 'svm'), ('LogisticRegression', 'lr'), ('NeuralNetwork', 'ann'), ('RandomForest', 'rf'), ('NaiveBayes', 'nb'), ('DecisionTree', 'dt')]
 
 		for key in keys:
 			r[key[0]] = {

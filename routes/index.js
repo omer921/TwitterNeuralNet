@@ -42,8 +42,8 @@ router.post('/check', function(req, res, next) {
           obj['data'][k]['title'] = k
         }
         result.push(obj)
-
       }
+      console.log(result.length + " is current length")
       //console.log(JSON.stringify(result));
       //res.render('index', { title: 'Twitter Bot Detector', data: result});
     } catch (e) {

@@ -410,7 +410,7 @@ def trainClassifiers():
 
 	#place holders for accuracy values for each of the classifiers we use
 	#(to be averaged after iterating over each of the 10 folds)
-    accuracies = {'NeuralNetwork': [], 'LogisticRegression': [], 'KNearestNeighbors': [], 'SupportVectorMachine': [], 'RandomForest': [], 'DecisionTree': [], 'NaiveBayes': []}
+    accuracies = {'NeuralNetwork': [], 'LogisticRegression': [], 'KNearestNeighbors': [], 'RandomForest': [], 'DecisionTree': [], 'NaiveBayes': []}
 
 	#iterate over each fold
     f = 1
@@ -462,7 +462,7 @@ def trainClassifiers():
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
         # svm = BaggingClassifier(LinearSVC(), max_samples=0.5, max_features=0.5)
         # svm.fit(trainData, trainLabels)
-        svmOut = 1
+        #svmOut = 1
 
 		#train and classify with a Naive Bayes for multivariate Bernoulli models using bagging
 	    #http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
@@ -488,12 +488,12 @@ def trainClassifiers():
         accuracies['NeuralNetwork'].append(accuracy(annOut, testLabels))
         accuracies['LogisticRegression'].append(accuracy(lrOut, testLabels))
         accuracies['KNearestNeighbors'].append(accuracy(knnOut, testLabels))
-        accuracies['SupportVectorMachine'].append(accuracy(svmOut, testLabels))
+        #accuracies['SupportVectorMachine'].append(accuracy(svmOut, testLabels))
         accuracies['RandomForest'].append(accuracy(rfOut, testLabels))
         accuracies['DecisionTree'].append(accuracy(dtOut, testLabels))
         accuracies['NaiveBayes'].append(accuracy(nbOut, testLabels))
 
-    return (ann, rf, dt, svm, nb, knn, lr, accuracies)
+    return (ann, rf, dt, nb, knn, lr, accuracies)
 
 #compute the accuracy of the output from the classifiers
 def accuracy(output, testLabels):
@@ -502,7 +502,7 @@ def accuracy(output, testLabels):
 	return (100*np.count_nonzero(np.array(output) == testLabels)/float(len(testLabels)))
 
 #classify a new instance
-def classify(name, twitter_api, ann, rf, dt, svm, nb, knn, lr):
+def classify(name, twitter_api, ann, rf, dt, nb, knn, lr):
 	#get the user's profile from Twitter
     profile = get_user_profile(twitter_api, screen_names=[name])
 
@@ -529,7 +529,7 @@ def classify(name, twitter_api, ann, rf, dt, svm, nb, knn, lr):
 	    user = [OrderedDict(sorted(profile[name].items())).values()]
 
 		#return rsults of classification
-	    return({'ann': ann.predict(user).tolist(), 'rf': rf.predict(user).tolist(), 'dt': dt.predict(user).tolist(), 'lr': lr.predict(user).tolist(), 'svm': svm.predict(user).tolist(), 'nb': nb.predict(user).tolist(), 'knn': knn.predict(user).tolist()})
+	    return({'ann': ann.predict(user).tolist(), 'rf': rf.predict(user).tolist(), 'dt': dt.predict(user).tolist(), 'lr': lr.predict(user).tolist(), 'nb': nb.predict(user).tolist(), 'knn': knn.predict(user).tolist()})
 
 
 #takes in usernames for classification via command line arguments
@@ -537,7 +537,7 @@ if __name__ == "__main__":
 	#get authenticated to make twitter calls
 	twitter_api = login()
 	#train and get classifiers
-	(ann, rf, dt, svm, nb, knn, lr, rates) = trainClassifiers()
+	(ann, rf, dt, nb, knn, lr, rates) = trainClassifiers()
 
 	#average the accuracy rates (for each classifier) and convert the accuracy rates to percent
 	for i in rates.keys():
@@ -546,10 +546,10 @@ if __name__ == "__main__":
 	#for each screen_name passed in via command line argument, classify as either
 	#bot (i.e. 0) or user (i.e. 1)
 	for name in sys.argv[1:]:
-		result = classify(name, twitter_api, ann, rf, dt, svm, nb, knn, lr)
+		result = classify(name, twitter_api, ann, rf, dt, nb, knn, lr)
 		r = {}
 
-		keys = [('KNearestNeighbors', 'knn'), ('LogisticRegression', 'lr'), ('NeuralNetwork', 'ann'), ('RandomForest', 'rf'), ('NaiveBayes', 'nb'), ('DecisionTree', 'dt'), ('SupportVectorMachine', 'svm')]
+		keys = [('KNearestNeighbors', 'knn'), ('LogisticRegression', 'lr'), ('NeuralNetwork', 'ann'), ('RandomForest', 'rf'), ('NaiveBayes', 'nb'), ('DecisionTree', 'dt')]
 
 		for key in keys:
 			r[key[0]] = {

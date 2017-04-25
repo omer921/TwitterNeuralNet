@@ -24,4 +24,7 @@ block content
                   tr
                     td= i
                     td= k.accuracy
-                    td= k.prediction
+                    if user.description == 1
+                      td= HUMAN
+                    else
+                      td= BOT

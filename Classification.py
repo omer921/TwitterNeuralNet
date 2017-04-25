@@ -541,8 +541,8 @@ def classify(name, twitter_api, ann, rf, dt, nb, knn, lr):
 
 	#only classify if the user not a verified user
     if profile[name]['verified']:
-        print('verified user')
-        return({})
+        #print('verified user')
+        return({'ann': [1], 'rf': [1], 'dt': [1], 'lr': [1], 'nb':[1], 'knn': [1]})
     else:
 		#get Tweets for this user (i.e. get user timeline)
 	    tweets = dict()

@@ -7,17 +7,17 @@ This is a Node service, which runs the Python script included at the root of the
 ## Running
 You must have Node, NPM and Python 2.7 installed on your system to run this application. 
 
-- 1: Running
+- 1: *Running*
 Clone this repo through the command line:
 
 `$ git clone https://github.com/omer921/TwitterNeuralNet.git TwitterNeuralNet && cd TwitterNeuralNet`
 
-- 2: install npm modules
+- 2: **install npm modules **
 For the site to run, the modules need to be installed (they are not provided on the git repo). Run:
 
 `$ npm install`
 
-- 3: start server
+- 3: **start server **
 Run the server locally:
 
 `$ npm start`
@@ -25,7 +25,7 @@ _Note: If you want to run with a hot reloader such as nodemon, run:_
 
 `$ nodemon ./bin/www`
 
-- 4: thats it!
+- 4: **thats it! **
 The command line will let you know what address your site is now loading on. Simply navigate there and use the website interface. 
 
 ## Usage

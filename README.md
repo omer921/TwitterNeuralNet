@@ -24,6 +24,7 @@ For the site to run, the modules need to be installed (they are not provided on 
 Run the server locally:
 
 `$ npm start`
+
 _Note: If you want to run with a hot reloader such as nodemon, run:_
 
 `$ nodemon ./bin/www`
